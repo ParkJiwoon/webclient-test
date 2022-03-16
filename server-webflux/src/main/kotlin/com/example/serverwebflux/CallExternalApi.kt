@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.server.*
 import reactor.core.publisher.Mono
 
+
 @Configuration
 class RouterConfig {
     val log: Logger = LoggerFactory.getLogger(RouterConfig::class.java)
@@ -16,6 +17,7 @@ class RouterConfig {
     @Bean
     fun route(handler: RouterHandler) = router {
         GET("/call/{id}", handler::call)
+        GET("/heavy/{id}", handler::heavy)
 
         before { request ->
             log.info("Before Filter ${request.pathVariable("id")}")
@@ -47,5 +49,20 @@ class RouterHandler {
                     Mono.just("[request $id] response $it")
                 )
             }
+    }
+
+    fun heavy(request: ServerRequest): Mono<ServerResponse> {
+        val id = request.pathVariable("id")
+        log.info("heavy request $id")
+
+        (0..1_000_000_000).forEach {
+            if (it % 100_000_000 == 0) {
+                log.info("Request [$id] for: $it")
+            }
+        }
+
+        return ServerResponse.ok().json().body(
+            Mono.just("heavy response $id")
+        )
     }
 }

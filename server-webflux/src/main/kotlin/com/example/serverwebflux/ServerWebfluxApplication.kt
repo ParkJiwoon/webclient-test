@@ -12,3 +12,4 @@ fun main(args: Array<String>) {
     System.setProperty("reactor.netty.ioWorkerCount", "1")
     runApplication<ServerWebfluxApplication>(*args)
 }
+

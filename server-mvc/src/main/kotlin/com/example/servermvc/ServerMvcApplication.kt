@@ -12,12 +12,14 @@ import org.springframework.web.bind.annotation.RestController
 @SpringBootApplication
 class ServerMvcApplication
 
+fun main(args: Array<String>) {
+    System.setProperty("server.port", "8181")
+    runApplication<ServerMvcApplication>(*args)
+}
+
 @RestController
 class BlockController {
-
-    companion object {
-        val log: Logger = LoggerFactory.getLogger(BlockController::class.java)
-    }
+    val log: Logger = LoggerFactory.getLogger(BlockController::class.java)
 
     @GetMapping("/block/{id}")
     fun block(@PathVariable id: Long): ResponseEntity<String> {
@@ -26,9 +28,4 @@ class BlockController {
         log.info("request $id end")
         return ResponseEntity.ok().body("response $id")
     }
-}
-
-fun main(args: Array<String>) {
-    System.setProperty("server.port", "8181")
-    runApplication<ServerMvcApplication>(*args)
 }
