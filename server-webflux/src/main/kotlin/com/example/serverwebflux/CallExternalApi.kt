@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Controller
+import org.springframework.web.client.RestTemplate
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.server.*
 import reactor.core.publisher.Mono
@@ -17,6 +18,7 @@ class RouterConfig {
     @Bean
     fun route(handler: RouterHandler) = router {
         GET("/call/{id}", handler::call)
+        GET("/rest/{id}", handler::rest)
         GET("/heavy/{id}", handler::heavy)
 
         before { request ->
@@ -49,6 +51,19 @@ class RouterHandler {
                     Mono.just("[request $id] response $it")
                 )
             }
+    }
+
+    fun rest(request: ServerRequest): Mono<ServerResponse> {
+        val id = request.pathVariable("id")
+        log.info("block request $id by restTemplate")
+
+        // 블로킹 로직이기 때문에 BlockHound.install() 코드를 주석처리 해야함
+        val restTemplate = RestTemplate()
+        val response = restTemplate.getForObject("http://localhost:8181/block/$id", String::class.java)
+
+        return ServerResponse.ok().json().body(
+            Mono.just(response!!)
+        )
     }
 
     fun heavy(request: ServerRequest): Mono<ServerResponse> {
