@@ -57,7 +57,6 @@ class RouterHandler {
         val id = request.pathVariable("id")
         log.info("block request $id by restTemplate")
 
-        // 블로킹 로직이기 때문에 BlockHound.install() 코드를 주석처리 해야함
         val restTemplate = RestTemplate()
         val response = restTemplate.getForObject("http://localhost:8181/block/$id", String::class.java)
 
