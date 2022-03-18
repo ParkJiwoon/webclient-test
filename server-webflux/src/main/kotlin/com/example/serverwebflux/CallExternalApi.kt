@@ -17,18 +17,21 @@ class RouterConfig {
 
     @Bean
     fun route(handler: RouterHandler) = router {
-        GET("/call/{id}", handler::call)
-        GET("/rest/{id}", handler::rest)
-        GET("/heavy/{id}", handler::heavy)
+        "v1".nest {
+            GET("/call/{id}", handler::call)
+            GET("/rest/{id}", handler::rest)
+            GET("/heavy/{id}", handler::heavy)
 
-        before { request ->
-            log.info("Before Filter ${request.pathVariable("id")}")
-            request
-        }
+            before { request ->
+                log.info("Before Filter ${request.pathVariable("id")}")
+                log.info("$request")
+                request
+            }
 
-        after { request, response ->
-            log.info("After Filter ${request.pathVariable("id")}")
-            response
+            after { request, response ->
+                log.info("After Filter ${request.pathVariable("id")}")
+                response
+            }
         }
     }
 }
@@ -40,7 +43,6 @@ class RouterHandler {
 
     fun call(request: ServerRequest): Mono<ServerResponse> {
         val id = request.pathVariable("id")
-        log.info("block request $id")
 
         return webClient.get()
             .uri("/block/$id")
@@ -55,8 +57,6 @@ class RouterHandler {
 
     fun rest(request: ServerRequest): Mono<ServerResponse> {
         val id = request.pathVariable("id")
-        log.info("block request $id by restTemplate")
-
         val restTemplate = RestTemplate()
         val response = restTemplate.getForObject("http://localhost:8181/block/$id", String::class.java)
 
@@ -67,7 +67,6 @@ class RouterHandler {
 
     fun heavy(request: ServerRequest): Mono<ServerResponse> {
         val id = request.pathVariable("id")
-        log.info("heavy request $id")
 
         (0..1_000_000_000).forEach {
             if (it % 100_000_000 == 0) {
